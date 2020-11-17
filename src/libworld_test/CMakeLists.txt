@@ -23,9 +23,10 @@ add_executable(libworld_test
     stateMachineTest.cpp
     airlineReferenceTableTest.cpp
     unit_testable_world.hpp
+    openflightsTest.cpp
 )
 
-set_property(TARGET libworld_test PROPERTY CXX_STANDARD 14)
+set_property(TARGET libworld_test PROPERTY CXX_STANDARD 17)
 target_include_directories(libworld_test PUBLIC ../libworld)
 target_link_libraries(libworld_test libworld GTest::GTest GTest::Main)
 
