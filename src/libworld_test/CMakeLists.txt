@@ -25,7 +25,7 @@ add_executable(libworld_test
     unit_testable_world.hpp
 )
 
-set_property(TARGET libworld_test PROPERTY CXX_STANDARD 14)
+set_property(TARGET libworld_test PROPERTY CXX_STANDARD 17)
 target_include_directories(libworld_test PUBLIC ../libworld)
 target_link_libraries(libworld_test libworld GTest::GTest GTest::Main)
 
