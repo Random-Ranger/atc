@@ -15,6 +15,10 @@ using namespace world;
 class CSVRow
 {
 private:
+    string m_line;
+    vector<string> m_data;
+
+private:
     // from https://stackoverflow.com/a/6089413
     static istream &safeGetline(istream &is, string &t)
     {
@@ -56,36 +60,22 @@ private:
     }
 
 public:
-    string_view operator[](size_t index) const
+    const string &operator[](size_t index) const
     {
         if (index >= size())
             throw out_of_range{"CSVRow : index out of bounds"};
-        return string_view(&m_line[m_data[index] + 1], m_data[index + 1] - (m_data[index] + 1));
+        return m_data[index];
     }
     size_t size() const
     {
-        return m_data.size() - 1;
+        return m_data.size();
     }
     void readNextRow(istream &str)
     {
         safeGetline(str, m_line);
 
-        m_data.clear();
-        m_data.emplace_back(-1);
-        string::size_type pos = 0;
-        while ((pos = m_line.find(',', pos)) != string::npos)
-        {
-            m_data.emplace_back(pos);
-            ++pos;
-        }
-        // This checks for a trailing comma with no data after it.
-        pos = m_line.size();
-        m_data.emplace_back(pos);
+        m_data = split(m_line, ',');
     }
-
-private:
-    string m_line;
-    vector<int> m_data;
 };
 
 istream &operator>>(istream &str, CSVRow &data)
@@ -131,8 +121,8 @@ public:
     const string &icao() const { return m_icao; }
 
 public:
-    OpenFlightsAirline(string_view _icao, string_view _callsign) : m_icao(_icao),
-                                                                             m_callsign(_callsign){};
+    OpenFlightsAirline(const string &_icao, const string &_callsign) : m_icao(_icao),
+                                                         m_callsign(_callsign){};
 };
 
 class OpenFlightsRoutes : public world::WorldRoutes
@@ -163,15 +153,14 @@ public:
     }
     const shared_ptr<Route> findRandomRouteFrom(const string &fromICAO, const string &airframe, const vector<string> &allowedAirlines)
     {
-        return findRandomRoute( getValueOrThrow(m_routesFrom, fromICAO), airframe, allowedAirlines);
+        return findRandomRoute(getValueOrThrow(m_routesFrom, fromICAO), airframe, allowedAirlines);
     }
     const shared_ptr<Route> findRandomRouteTo(const string &toICAO, const string &airframe, const vector<string> &allowedAirlines)
     {
-        return findRandomRoute( getValueOrThrow(m_routesTo, toICAO), airframe, allowedAirlines);
+        return findRandomRoute(getValueOrThrow(m_routesTo, toICAO), airframe, allowedAirlines);
     }
 
 private:
-
     const shared_ptr<Route> findRandomRoute(vector<shared_ptr<world::WorldRoutes::Route>> routes, const string &airframe, const vector<string> &allowedAirlines)
     {
         int totalRoutes = routes.size();
@@ -322,9 +311,9 @@ public:
                              {
                                  try
                                  {
-                                     int openflightAirlineId = svtoi(row[0]);
+                                     int openflightAirlineId = stoi(row[0]);
                                      shared_ptr<OpenFlightsAirline> airline = make_shared<OpenFlightsAirline>(
-                                         row[4].substr(1, row[4].size() - 2), 
+                                         row[4].substr(1, row[4].size() - 2),
                                          row[5].substr(1, row[5].size() - 2));
                                      m_datas->m_airlines[openflightAirlineId] = airline;
                                  }
@@ -362,11 +351,9 @@ public:
                              {
                                  try
                                  {
-                                     int openflightAirlineId = svtoi(row[1]);
-                                     string iataDeparture(row[2]);
-                                     string iataArrival(row[4]);
-                                     auto icaoDeparture = getValueOrThrow(m_datas->m_airportIata2Icao, iataDeparture);
-                                     auto icaoArrival = getValueOrThrow(m_datas->m_airportIata2Icao, iataArrival);
+                                     int openflightAirlineId = stoi(row[1]);
+                                     auto icaoDeparture = getValueOrThrow(m_datas->m_airportIata2Icao, row[2]);
+                                     auto icaoArrival = getValueOrThrow(m_datas->m_airportIata2Icao, row[4]);
                                      auto iataAirframes = split(string(row[8]), ' ');
                                      vector<string> icaoAirframes;
                                      for (string iataAirframe : iataAirframes)
@@ -375,9 +362,9 @@ public:
                                          {
                                              icaoAirframes.push_back(getValueOrThrow(m_datas->m_airframeIata2Icao, iataAirframe));
                                          }
-                                         catch(const exception& e)
+                                         catch (const exception &e)
                                          {
-                                             // Nothing to do if the iata code for one of the planes operating the routes 
+                                             // Nothing to do if the iata code for one of the planes operating the routes
                                              // has no ICAO equivalent. but the route might still be valid
                                          }
                                      }
@@ -405,22 +392,13 @@ public:
 
 private:
     // A value of \N means an invalid/unknown field  in openflights files
-    bool isValidEntry(string_view value)
+    bool isValidEntry(const string &value)
     {
         return (value.compare("\\N") != 0);
     }
-    bool isValidString(string_view value)
+    bool isValidString(const string &value)
     {
         return (isValidEntry(value) && (value.front() == '"') && (value.back() == '"'));
-    }
-
-    // Convert a string view to an int with exception handling
-    int svtoi(string_view v)
-    {
-        int intValue;
-        
-        return std::stoi(string(v));
-
     }
 
 private:

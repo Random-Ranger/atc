@@ -127,7 +127,7 @@ add_xplane_plugin(pluginxp 301
     transcriptInterface.hpp
 )
 
-set_property(TARGET pluginxp PROPERTY CXX_STANDARD 17)
+set_property(TARGET pluginxp PROPERTY CXX_STANDARD 14)
 
 target_include_directories(pluginxp PUBLIC 
     ${ATC_LIBS_PATH}/PPL/src
