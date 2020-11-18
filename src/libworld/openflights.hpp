@@ -5,6 +5,7 @@
 #pragma once
 
 #include <fstream>
+#include <cstring>
 #include "libworld.h"
 
 using namespace std;
@@ -198,6 +199,18 @@ private:
         return nullptr;
     }
 
+    static bool iequals(const string &a, const string & b)
+    {
+        if (a.length() == b.length())
+        {
+            return equal(b.begin(), b.end(), a.begin(), 
+                [](unsigned char ca, unsigned char cb) {
+                    return (tolower(ca) == tolower(cb));
+                });
+        }
+        return false;
+    }
+
     bool hasStringInsensitive(const vector<string> v, const string &s)
     {
         // An empty string is always valid
@@ -209,7 +222,7 @@ private:
             return false;
 
         return hasAny<string>(v, [s](string test) {
-            return (stricmp(s.c_str(), test.c_str()) == 0);
+            return (iequals(s.c_str(), test.c_str()));
             });
     }
 };
