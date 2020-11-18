@@ -45,7 +45,7 @@ jobs:
       - name: copy openflights datas to plugin assets
         uses: actions/upload-artifact@v2
         with:
-          name: plugin_assets/openflights
+          name: openflightsdatas
           path: |
             libs/openflights/data/airports.dat
             libs/openflights/data/planes.dat
@@ -157,6 +157,8 @@ jobs:
           cp win_xpl/tasks/redist/win/libgcc_s_seh-1.dll plugin_assets/64/
           cp win_xpl/tasks/redist/win/libstdc++-6.dll plugin_assets/64/
           cp win_xpl/tasks/redist/win/libwinpthread-1.dll plugin_assets/64/
+          mkdir plugin_assets/openflights
+          find openflightsdatas -type f -exec cp {} plugin_assets/openflights \;
           mv plugin_assets airTrafficAndControl
 
       - name: upload plugin zip
