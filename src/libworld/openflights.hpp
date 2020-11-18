@@ -151,17 +151,17 @@ public:
         m_selector = random_selector<default_random_engine>(randomGenerator);
         ;
     }
-    const shared_ptr<Route> findRandomRouteFrom(const string &fromICAO, const string &airframe, const vector<string> &allowedAirlines)
+    const Route& findRandomRouteFrom(const string &fromICAO, const string &airframe, const vector<string> &allowedAirlines)
     {
         return findRandomRoute(getValueOrThrow(m_routesFrom, fromICAO), airframe, allowedAirlines);
     }
-    const shared_ptr<Route> findRandomRouteTo(const string &toICAO, const string &airframe, const vector<string> &allowedAirlines)
+    const Route& findRandomRouteTo(const string &toICAO, const string &airframe, const vector<string> &allowedAirlines)
     {
         return findRandomRoute(getValueOrThrow(m_routesTo, toICAO), airframe, allowedAirlines);
     }
 
 private:
-    const shared_ptr<Route> findRandomRoute(vector<shared_ptr<world::WorldRoutes::Route>> routes, const string &airframe, const vector<string> &allowedAirlines)
+    const Route& findRandomRoute(vector<shared_ptr<world::WorldRoutes::Route>> routes, const string &airframe, const vector<string> &allowedAirlines)
     {
         int totalRoutes = routes.size();
         do
@@ -181,11 +181,11 @@ private:
                 continue;
 
             // return found route
-            return route;
+            return *route;
         } while (totalRoutes > 0);
 
         // No route found
-        return nullptr;
+        throw std::runtime_error("Route not found");
     }
 
     static bool iequals(const string &a, const string & b)

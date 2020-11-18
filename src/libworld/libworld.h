@@ -2564,7 +2564,7 @@ namespace world
                 const string& callsign()    const {return m_AirlineCallsign;}
                 const string& airline()    const {return m_AirlineIcao;}
             public:
-                Route(string _departure, string _destination, string _airlineIcao, string _callsign, std::vector<string> _airframes):
+                Route(const string _departure, const string _destination, const string _airlineIcao, const string _callsign, std::vector<string> _airframes):
                     m_icaoDeparture(_departure),
                     m_icaoDestination(_destination),
                     m_icaoAirframes(_airframes),
@@ -2573,8 +2573,8 @@ namespace world
                     {}
         };
         public:
-        virtual const shared_ptr<Route> findRandomRouteFrom(const string &fromICAO, const string &airframe, const std::vector<std::string>& allowedAirlines) = 0;
-        virtual const shared_ptr<Route> findRandomRouteTo(const string &toICAO, const string &airframe, const std::vector<std::string>& allowedAirlines) = 0;
+        virtual const Route& findRandomRouteFrom(const string &fromICAO, const string &airframe, const std::vector<std::string>& allowedAirlines) = 0;
+        virtual const Route& findRandomRouteTo(const string &toICAO, const string &airframe, const std::vector<std::string>& allowedAirlines) = 0;
     };
 }
 
