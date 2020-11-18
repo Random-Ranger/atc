@@ -47,10 +47,10 @@ jobs:
         with:
           name: plugin_assets/openflights
           path: |
-            libs\openflights\data\airports.dat
-            libs\openflights\data\planes.dat
-            libs\openflights\data\airlines.dat
-            libs\openflights\data\routes.dat
+            libs/openflights/data/airports.dat
+            libs/openflights/data/planes.dat
+            libs/openflights/data/airlines.dat
+            libs/openflights/data/routes.dat
 
       - name: upload plugin assets
         uses: actions/upload-artifact@v2
