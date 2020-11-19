@@ -141,15 +141,15 @@ private:
     vector<shared_ptr<world::WorldRoutes::Route>> m_routes;
     unordered_map<string, vector<shared_ptr<world::WorldRoutes::Route>>> m_routesFrom;
     unordered_map<string, vector<shared_ptr<world::WorldRoutes::Route>>> m_routesTo;
-    default_random_engine m_rng;
+    std::mt19937 m_rng;
 public:
     // seed the RNG with current time,
     OpenFlightsRoutes(shared_ptr<HostServices> _host) : m_host(_host)
     {
-        m_rng = default_random_engine(chrono::system_clock::now().time_since_epoch().count());
+        m_rng = std::mt19937(chrono::system_clock::now().time_since_epoch().count());
     }
     // Used to force Rng for testing purpose
-    void setRng(default_random_engine randomGenerator)
+    void setRng(std::mt19937 randomGenerator)
     {
         m_rng = randomGenerator;
     }

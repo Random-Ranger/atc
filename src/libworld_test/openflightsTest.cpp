@@ -132,7 +132,6 @@ TEST(OpenFlightsRoutesTestNoFixture, parseTest)
 
 TEST_F(OpenFlightsRoutesTest, findOutboundRouteFixture)
 {
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(2));
     auto defaultRoute = world::WorldRoutes::Route("", "", "", "", {});
     world::WorldRoutes::Route &route = defaultRoute;
 
@@ -164,7 +163,6 @@ TEST_F(OpenFlightsRoutesTest, findOutboundRouteFixture)
 
 TEST_F(OpenFlightsRoutesTest, findInboundRouteFixture)
 {
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(2));
     auto defaultRoute = world::WorldRoutes::Route("", "", "", "", {});
     world::WorldRoutes::Route &route = defaultRoute;
 
@@ -197,14 +195,14 @@ TEST_F(OpenFlightsRoutesTest, findInboundRouteFixture)
 TEST_F(OpenFlightsRoutesTest, checkRandomness)
 {
     // By default, the rng is the local time, we should have different flights every time
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(2));
+    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     auto defaultRoute = world::WorldRoutes::Route("", "", "", "", {});
     world::WorldRoutes::Route &route = defaultRoute;
-    char Seq1[6][5]={"KCYS", "KFLV", "KHMN", "KCYS", "KCHS", "KNXX"};
-    char Seq2[6][5]={"KRAL", "KFLV", "KCHS", "KNXX", "KWAL", "KWAL"};
+    char Seq1[6][5]={"KWAL", "KSCK", "KWAL", "KCYS", "KWAL", "KWAL"};
+    char Seq2[6][5]={"KCHS", "KCHS", "KHMN", "KHMN", "KFLV", "KCYS"};
 
     // Set the first RNG
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(2));
+    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
     EXPECT_STREQ(route.destination().c_str(), Seq1[0]);
@@ -226,7 +224,7 @@ TEST_F(OpenFlightsRoutesTest, checkRandomness)
     EXPECT_STREQ(route.departure().c_str(), Seq1[5]);
 
     // Reset the first RNG, check that the sequence is the same
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(2));
+    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
     EXPECT_STREQ(route.destination().c_str(), Seq1[0]);
@@ -248,7 +246,7 @@ TEST_F(OpenFlightsRoutesTest, checkRandomness)
     EXPECT_STREQ(route.departure().c_str(), Seq1[5]);
     
     // Change the seed and check that the sequences are different
-    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::default_random_engine(3));
+    dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(3));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
     EXPECT_STREQ(route.destination().c_str(), Seq2[0]);
