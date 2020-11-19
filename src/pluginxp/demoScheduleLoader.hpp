@@ -184,17 +184,26 @@ private:
 
         typedef function<const world::WorldRoutes::Route &(const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )> RouteFinder;
 
-        auto routeFromFinder = [flightdatas](const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+        auto routeFromFinder = 
+            [flightdatas]
+            (const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+            -> const world::WorldRoutes::Route&
         {
             return flightdatas->findRandomRouteFrom(airportIcao, aircraftModel, allowedAirlines);
         };
 
-        auto routeToFinder = [flightdatas](const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+        auto routeToFinder = 
+            [flightdatas]
+            (const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+            -> const world::WorldRoutes::Route&
         {
             return flightdatas->findRandomRouteTo(airportIcao, aircraftModel, allowedAirlines);
         };
 
-        auto findRoute = [this, defaultRoute](RouteFinder finder, const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+        auto findRoute = 
+            [this, defaultRoute]
+            (RouteFinder finder, const string airportIcao, const string aircraftModel, const vector<string>allowedAirlines )
+            -> const world::WorldRoutes::Route&
         {
             try
             {
@@ -250,7 +259,7 @@ private:
                 if ((index % 2) == 1)
                 {
 
-                    auto route = findRoute(routeToFinder, m_airport->header().icao(), model, gate->airlines() );
+                    auto route = findRoute(routeFromFinder, m_airport->header().icao(), model, gate->airlines() );
 
                     time_t departureTime = nextDepartureTime;
                     nextDepartureTime += secondsBetweenDepartures;
@@ -258,7 +267,7 @@ private:
                 }
                 else
                 {
-                    auto route = findRoute(routeFromFinder, m_airport->header().icao(), model, gate->airlines());
+                    auto route = findRoute(routeToFinder, m_airport->header().icao(), model, gate->airlines());
 
                     time_t arrivalTime = nextArrivalTime;
                     nextArrivalTime += secondsBetweenArrivals;
