@@ -198,73 +198,80 @@ TEST_F(OpenFlightsRoutesTest, checkRandomness)
     dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     auto defaultRoute = world::WorldRoutes::Route("", "", "", "", {});
     world::WorldRoutes::Route &route = defaultRoute;
-    char Seq1[6][5]={"KWAL", "KSCK", "KWAL", "KCYS", "KWAL", "KWAL"};
-    char Seq2[6][5]={"KCHS", "KCHS", "KHMN", "KHMN", "KFLV", "KCYS"};
+    vector<string> seq1;
+    vector<string> seq2;
+    vector<string> seq3;
+    // char Seq1[6][5]={"KWAL", "KSCK", "KWAL", "KCYS", "KWAL", "KWAL"};
+    // char Seq2[6][5]={"KCHS", "KCHS", "KHMN", "KHMN", "KFLV", "KCYS"};
 
     // Set the first RNG
     dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[0]);
+    seq1.push_back(route.destination());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[1]);
+    seq1.push_back(route.destination());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[2]);
+    seq1.push_back(route.destination());
 
     // Inbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[3]);
+    seq1.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[4]);
+    seq1.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[5]);
+    seq1.push_back(route.departure());
 
     // Reset the first RNG, check that the sequence is the same
     dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(2));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[0]);
+    seq2.push_back(route.destination());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[1]);
+    seq2.push_back(route.destination());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq1[2]);
+    seq2.push_back(route.destination());
 
     // Inbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[3]);
+    seq2.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[4]);
+    seq2.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq1[5]);
+    seq2.push_back(route.departure());
     
     // Change the seed and check that the sequences are different
     dynamic_cast<OpenFlightsRoutes&>(*m_routeFinder).setRng(std::mt19937(3));
     // outbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq2[0]);
+    seq3.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq2[1]);
+    seq3.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteFrom("KJFK", "", {}));
-    EXPECT_STREQ(route.destination().c_str(), Seq2[2]);
+    seq3.push_back(route.departure());
 
     // Inbound
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq2[3]);
+    seq3.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq2[4]);
+    seq3.push_back(route.departure());
 
     ASSERT_NO_THROW(route = m_routeFinder->findRandomRouteTo("KJFK", "", {}));
-    EXPECT_STREQ(route.departure().c_str(), Seq2[5]);
+    seq3.push_back(route.departure());
+
+    ASSERT_TRUE(std::equal(seq1.begin(), seq1.end(), seq2.begin()));
+    ASSERT_FALSE(std::equal(seq1.begin(), seq1.end(), seq3.begin()));
+
 
 }
