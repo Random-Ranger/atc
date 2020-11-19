@@ -75,6 +75,9 @@ public:
         safeGetline(str, m_line);
 
         m_data = split(m_line, ',');
+        // Add empty last field if needed
+        if (!m_line.empty() && (m_line.back() == ','))
+            m_data.push_back("");
     }
 };
 
@@ -138,19 +141,17 @@ private:
     vector<shared_ptr<world::WorldRoutes::Route>> m_routes;
     unordered_map<string, vector<shared_ptr<world::WorldRoutes::Route>>> m_routesFrom;
     unordered_map<string, vector<shared_ptr<world::WorldRoutes::Route>>> m_routesTo;
-    random_selector<default_random_engine> m_selector;
-
+    default_random_engine m_rng;
 public:
     // seed the RNG with current time,
-    OpenFlightsRoutes(shared_ptr<HostServices> _host, default_random_engine randomGenerator = default_random_engine(chrono::system_clock::now().time_since_epoch().count())) : m_host(_host)
+    OpenFlightsRoutes(shared_ptr<HostServices> _host) : m_host(_host)
     {
-        m_selector = random_selector<default_random_engine>(randomGenerator);
+        m_rng = default_random_engine(chrono::system_clock::now().time_since_epoch().count());
     }
     // Used to force Rng for testing purpose
     void setRng(default_random_engine randomGenerator)
     {
-        m_selector = random_selector<default_random_engine>(randomGenerator);
-        ;
+        m_rng = randomGenerator;
     }
     const Route& findRandomRouteFrom(const string &fromICAO, const string &airframe, const vector<string> &allowedAirlines)
     {
@@ -164,36 +165,39 @@ public:
     }
 
 private:
-    const Route& findRandomRoute(vector<shared_ptr<world::WorldRoutes::Route>> routes, const string &airframe, const vector<string> &allowedAirlines)
+    const Route& findRandomRoute(const vector<shared_ptr<world::WorldRoutes::Route>> _routes, const string &airframe, const vector<string> &allowedAirlines)
     {
-        int totalRoutes = routes.size();
-        m_host->writeLog("OPENFLIGHTS| %d routes found ", totalRoutes);
+        vector<shared_ptr<world::WorldRoutes::Route>> routes(_routes);
+        shuffle (routes.begin(), routes.end(), m_rng);
+
+        m_host->writeLog("OPENFLIGHTS| %d routes found ", routes.size());
         for (auto airline : allowedAirlines)
         {
             m_host->writeLog("OPENFLIGHTS| %s allowed ", airline.c_str());
         }
         do
         {
-            totalRoutes--;
-            
-            auto route = m_selector(routes);
+            auto route = routes.back();
+            routes.pop_back();
             m_host->writeLog("OPENFLIGHTS| checking route from %s to %s by %s", route->departure().c_str(), route->destination().c_str(), route->airline().c_str());
             auto allowedAirFrames = route->usedAirframes();
             // Any airline is allowed if allowedAirlines is empty
             auto routeAirline = (allowedAirlines.size() > 0) ? route->airline() : "";
+
             // Airframe asked must be used on this route
-            if (!hasStringInsensitive(allowedAirFrames, airframe))
+            if (!airframe.empty() && !hasStringInsensitive(allowedAirFrames, airframe))
             {
                 continue;
             }
-            // Route must be operated by one of the airlines passed as a parameter
-            if (!hasStringInsensitive(allowedAirlines, routeAirline))
+
+            // Route must be operated by one of the airlines allowed
+            if (!allowedAirlines.empty() && !hasStringInsensitive(allowedAirlines, routeAirline))
             {
                 continue;
             }
             // return found route
             return *route;
-        } while (totalRoutes > 0);
+        } while (!routes.empty());
 
         // No route found
         throw std::runtime_error("Route not found");
