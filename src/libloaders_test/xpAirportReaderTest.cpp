@@ -837,6 +837,27 @@ TEST(XPAptDatReaderTest, readAptDat_skipAirportsFailingToLoad)
     EXPECT_EQ(output[2]->header().icao(), "MNOP");
 }
 
+TEST(XPAptDatReaderTest, readAll_realDefaultAptDat)
+{
+    auto host = TestHostServices::create("D:\\jeux\\steam\\steamapps\\common\\X-Plane 11");
+    int overrideCount = 0;
+    host->enableLogs(true);
+    vector<shared_ptr<Airport>> airports;
+
+    XPSceneryAptDatReader aptDatReader(host);
+    unordered_set<string> loadedIcaos;
+    aptDatReader.readSceneryAirports(
+        [](const Airport::Header&) { return nullptr;},
+        [&](const Airport::Header header) {
+            bool isNewIcao = loadedIcaos.insert(header.icao()).second;
+            overrideCount += (isNewIcao ? 0 : 1);
+            return isNewIcao;
+        },
+        [this, &airports](shared_ptr<Airport> airport) {
+            airports.push_back(airport);
+        });
+}
+
 #if 0
 TEST(XPAptDatReaderTest, readAll_realDefaultAptDat)
 {
@@ -1002,6 +1023,7 @@ void assertTaxiEdgesExist(shared_ptr<Airport> airport, const unordered_set<strin
         throw runtime_error(message.str());
     }
 }
+
 
 // void writeAirportJson(shared_ptr<const Airport> airport, ostream& output)
 // {

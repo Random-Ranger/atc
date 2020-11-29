@@ -860,6 +860,9 @@ void XPSceneryAptDatReader::loadSceneryFolderList(vector<string>& list)
     shared_ptr<istream> iniFile = m_host->openFileForRead(sceneryPacksIniPath);
     XPSceneryPacksIniReader iniReader(m_host);
     iniReader.readSceneryFolderList(*iniFile, list);
+    // list.push_back(
+    //     "Resources/default scenery/default apt dat"
+    // );
 }
 
 shared_ptr<istream> XPSceneryAptDatReader::tryOpenAptDat(const string& sceneryFolder)
@@ -870,6 +873,10 @@ shared_ptr<istream> XPSceneryAptDatReader::tryOpenAptDat(const string& sceneryFo
         m_host->writeLog("LSCNRY|will load airports from [%s]", aptDatFilePath.c_str());
         return m_host->openFileForRead(aptDatFilePath);
     }
-
+    else
+    {
+        m_host->writeLog("LSCNRY|Folder [%s] listed but does not contain an apt.dat", aptDatFilePath.c_str());
+    }
+    
     return nullptr;
 }

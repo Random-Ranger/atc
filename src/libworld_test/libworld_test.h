@@ -218,6 +218,9 @@ namespace world
         bool m_quiet;
         chrono::milliseconds m_timeForLog;
         bool m_timeForLogWasSet;
+
+        string m_hostDir;
+        bool m_validHostDir;
     public:
         TestHostServices() :
             TestHostServices(false)
@@ -228,11 +231,19 @@ namespace world
             m_geoToLocal(defaultGeoToLocal),
             m_localToGeo(defaultLocalToGeo),
             m_timeForLog(chrono::milliseconds(0)),
-            m_timeForLogWasSet(false)
+            m_timeForLogWasSet(false),
+            m_hostDir("HOST_DIR"),
+            m_validHostDir(false)
         {
+            
             HostServices::initLogString();
         }
     public:
+        void setHostDir(const char *hostDir)
+        {
+            m_validHostDir = true;
+            m_hostDir = string(hostDir);
+        }
         shared_ptr<World> getWorld() override
         {
             if (m_world)
@@ -325,7 +336,7 @@ namespace world
         }
         string getHostFilePath(const vector<string>& relativePathParts) override
         {
-            return pathAppend("HOST_DIR", relativePathParts);
+            return pathAppend(m_hostDir, relativePathParts);
         }
         vector<string> findFilesInHostDirectory(const vector<string>& relativePathParts) override
         {
@@ -333,14 +344,22 @@ namespace world
         }
         shared_ptr<istream> openFileForRead(const string& filePath) override
         {
-            auto file = shared_ptr<ifstream>(new ifstream());
-            file->exceptions(ifstream::failbit | ifstream::badbit);
-            file->open(filePath);
-            return file;
+            auto ss = make_shared<stringstream>();
+            ifstream file(filePath);
+            ss->exceptions(ifstream::failbit | ifstream::badbit);
+            (*ss) << file.rdbuf();
+            file.close();
+            return ss;
         }
         bool checkFileExists(const string& filePath) override
         {
-            return true;
+            if (!m_validHostDir)
+            {
+                return true;
+            }
+
+            ifstream f(filePath.c_str());
+            return f.good();
         }
         void showMessageBox(const string& title, const char *format, ...) override
         {
@@ -436,10 +455,14 @@ namespace world
             services().use<TextToSpeechService>(m_textToSpeechService);
         }
     public:
-        static shared_ptr<TestHostServices> create()
+        static shared_ptr<TestHostServices> create(const char *hostDir=nullptr)
         {
             auto testHost = make_shared<TestHostServices>();
             testHost->initializeServices(testHost);
+            if (hostDir)
+            {
+                testHost->setHostDir(hostDir);
+            }
             return testHost;
         }
         static shared_ptr<TestHostServices> createWithWorld()
